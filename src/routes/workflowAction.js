@@ -76,11 +76,11 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
       });
     }
     // Quick format check before even calling the API — Belgian zips are 4 digits
-    if (!/^\d{4}$/.test(zip_code)) {
+    if (!/^\d{4}$/.test(zip)) {
       return res.status(200).json({
 	      success: false,
 	      error: "invalid_format",
-	      message: `"${zip_code}" doesn't look like a valid zip code. Please provide a 4-digit Belgian postal code.`,
+	      message: `"${zip}" doesn't look like a valid zip code. Please provide a 4-digit Belgian postal code.`,
       });
     }
 
@@ -94,6 +94,7 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	        error: "zip_not_found",
 	        message: `We couldn't find a location for zip code ${zip_code}. Could you double-check it?`,
 	      });
+	}
     }
 
     const ranked = rankByDistance(origin, locations);

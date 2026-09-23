@@ -53,6 +53,7 @@ async function writeNearestLocationToContact({ locationId, contactId, nearest })
  */
 router.post("/actions/nearest-location", verifyActionSecret, async (req, res) => {
   try {
+    console.log("Incoming payload:", JSON.stringify(req.body));
     const { data = {}, extras = {} } = req.body;
     const zip = data.zip_code;
     const { locationId, contactId } = extras;

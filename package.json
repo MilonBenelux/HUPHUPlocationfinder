@@ -1,0 +1,16 @@
+{
+  "name": "ghl-nearest-location",
+  "version": "1.0.0",
+  "description": "GoHighLevel Marketplace app: finds the closest of 15 fixed locations to a given ZIP code.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

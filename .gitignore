@@ -1,0 +1,13 @@
+# Dependencies — reinstalled via `npm install`, never committed
+node_modules/
+
+# Real secrets — only .env.example (the template) should be committed
+.env
+
+# Local token storage — created at runtime by src/store/tokenStore.js,
+# holds real OAuth access/refresh tokens once the app is installed
+src/store/tokens.json
+
+# OS/editor noise
+.DS_Store
+*.log

@@ -84,8 +84,9 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
       });
     }
 
+    let origin;
     try {
-       const origin = await geocodeZip(zip);
+       origin = await geocodeZip(zip);
     } catch (err) {
     	
 	      // Zip code well-formed, but the geocoding API doesn't recognize it

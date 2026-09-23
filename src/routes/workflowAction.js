@@ -69,11 +69,33 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     const { locationId, contactId } = extras;
 
     if (!zip) {
-      return res.status(400).json({ error: "data.zip_code is required" });
+      return res.status(200).json({
+	      success: false,
+	      error: "required_value_missing",
+	      message: "data.zip_code is required`,
+      });
+    }
+    // Quick format check before even calling the API — Belgian zips are 4 digits
+    if (!/^\d{4}$/.test(zip_code)) {
+      return res.status(200).json({
+	      success: false,
+	      error: "invalid_format",
+	      message: `"${zip_code}" doesn't look like a valid zip code. Please provide a 4-digit Belgian postal code.`,
+      });
     }
 
+    try {
+       const origin = await geocodeZip(zip);
+    } catch (err) {
+    	if (err.response?.status === 404) {
+	      // Zip code well-formed, but the geocoding API doesn't recognize it
+	      return res.status(200).json({
+	        success: false,
+	        error: "zip_not_found",
+	        message: `We couldn't find a location for zip code ${zip_code}. Could you double-check it?`,
+	      });
+    }
 
-    const origin = await geocodeZip(zip);
     const ranked = rankByDistance(origin, locations);
     const nearest = ranked[0];
     const nearbyRanked = ranked

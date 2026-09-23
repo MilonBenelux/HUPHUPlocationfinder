@@ -72,7 +72,7 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
       return res.status(200).json({
 	      success: false,
 	      error: "required_value_missing",
-	      message: "data.zip_code is required`,
+	      message: "data.zip_code is required",
       });
     }
     // Quick format check before even calling the API — Belgian zips are 4 digits

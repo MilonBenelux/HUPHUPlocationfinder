@@ -78,7 +78,8 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     const nearest = ranked[0];
     const nearbyRanked = ranked
 	.filter((loc) => loc.distanceKm < MAX_DISTANCE)
-	.slice(0, MAX_LOCATIONS);
+	.slice(1, MAX_LOCATIONS);
+    const nearbyRankedLimited = nearest ? [nearest, ...nearbyRanked] : [];
 
     if (process.env.GHL_NEAREST_LOCATION_FIELD_KEY) {
       try {
@@ -104,7 +105,7 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    distanceKm: nearest.distanceKm,
 	  },
 	  allRanked: JSON.stringify(
-	   nearbyRanked.map((loc) => ({
+	   nearbyRankedLimited.map((loc) => ({
 	    id: loc.id,
 	    name: loc.name,
 	    address: loc.address,

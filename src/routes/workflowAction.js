@@ -54,13 +54,21 @@ async function writeNearestLocationToContact({ locationId, contactId, nearest })
 router.post("/actions/nearest-location", verifyActionSecret, async (req, res) => {
   try {
     console.log("Incoming payload:", JSON.stringify(req.body));
-    const { data = {}, extras = {} } = req.body;
+
+    const body = req.body || {};
+    // GHL's documented production payload nests fields under "data" (with
+    // "extras" alongside it for locationId/contactId/workflowId). The
+    // marketplace's built-in test screen, however, sends fields flat at
+    // the top level with no "extras" at all. Support both shapes.
+    const data = body.data || body;
+    const extras = body.extras || {};
     const zip = data.zip_code;
     const { locationId, contactId } = extras;
 
     if (!zip) {
       return res.status(400).json({ error: "data.zip_code is required" });
     }
+
 
     const origin = await geocodeZip(zip);
     const ranked = rankByDistance(origin, locations);

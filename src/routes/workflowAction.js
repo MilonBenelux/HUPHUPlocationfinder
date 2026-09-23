@@ -87,14 +87,14 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     try {
        const origin = await geocodeZip(zip);
     } catch (err) {
-    	if (err.response?.status === 404) {
+    	
 	      // Zip code well-formed, but the geocoding API doesn't recognize it
 	      return res.status(200).json({
 	        success: false,
 	        error: "zip_not_found",
-	        message: `We couldn't find a location for zip code ${zip_code}. Could you double-check it?`,
+	        message: `We couldn't find a location for zip code ${zip}. Could you double-check it?`,
 	      });
-	}
+	
     }
 
     const ranked = rankByDistance(origin, locations);

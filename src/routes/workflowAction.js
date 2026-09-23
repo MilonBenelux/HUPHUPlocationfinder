@@ -86,24 +86,29 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
         );
       }
     }
+    
+    const responseData = {
+  success: true,
+  zip,
+  origin,
+  nearestLocation: {
+    id: nearest.id,
+    name: nearest.name,
+    address: nearest.address,
+    distanceKM: nearest.distanceKm,
+  },
+  allRanked: ranked.map((loc) => ({
+    id: loc.id,
+    name: loc.name,
+    address: loc.address,
+    distanceKm: loc.distanceKm,
+  })),
+};
+    
+    console.log("Outgoing payload:", JSON.stringify(responseData, null, 2));
 
-    return res.status(200).json({
-      success: true,
-      zip,
-      origin,
-      nearestLocation: {
-        id: nearest.id,
-        name: nearest.name,
-        address: nearest.address,
-        distanceKM: nearest.distanceKm,
-      },
-      allRanked: ranked.map((loc) => ({
-        id: loc.id,
-        name: loc.name,
-        address: loc.address,
-        distanceKm: loc.distanceKm,
-      })),
-    });
+    return res.status(200).json(responseData);
+
   } catch (err) {
     console.error("nearest-location action failed:", err.message);
     return res.status(500).json({ error: err.message });

@@ -103,6 +103,7 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    name: nearest.name,
 	    address: nearest.address,
 	    distanceKm: nearest.distanceKm,
+            calendar:nearest.calendar,
 	  },
 	  allRanked: JSON.stringify(
 	   nearbyRankedLimited.map((loc) => ({
@@ -110,6 +111,7 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    name: loc.name,
 	    address: loc.address,
 	    distanceKm: loc.distanceKm,
+            calendar:loc.calendar,
 	  }))
 	 ),
 	};

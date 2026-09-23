@@ -95,12 +95,13 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
         id: nearest.id,
         name: nearest.name,
         address: nearest.address,
-        distanceMiles: nearest.distanceMiles,
+        distanceKM: nearest.distanceKm,
       },
       allRanked: ranked.map((loc) => ({
         id: loc.id,
         name: loc.name,
-        distanceMiles: loc.distanceMiles,
+        address: loc.address,
+        distanceKm: loc.distanceKm,
       })),
     });
   } catch (err) {

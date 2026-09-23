@@ -1,3 +1,6 @@
+const MAX_DISTANCE = 15;  // the max distance to show secondary locations
+const MAX_LOCATIONS = 3;   // the max number of locations
+
 const express = require("express");
 const axios = require("axios");
 const { geocodeZip } = require("../utils/geocode");
@@ -73,6 +76,9 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     const origin = await geocodeZip(zip);
     const ranked = rankByDistance(origin, locations);
     const nearest = ranked[0];
+    const nearbyRanked = ranked
+	.filter((loc) => loc.distanceKm < MAX_DISTANCE)
+	.slice(0, MAX_LOCATIONS);
 
     if (process.env.GHL_NEAREST_LOCATION_FIELD_KEY) {
       try {
@@ -88,22 +94,22 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     }
     
     const responseData = {
-  success: true,
-  zip,
-  origin,
-  nearestLocation: {
-    id: nearest.id,
-    name: nearest.name,
-    address: nearest.address,
-    distanceKM: nearest.distanceKm,
-  },
-  allRanked: ranked.map((loc) => ({
-    id: loc.id,
-    name: loc.name,
-    address: loc.address,
-    distanceKm: loc.distanceKm,
-  })),
-};
+	  success: true,
+	  zip,
+	  origin,
+	  nearestLocation: {
+	    id: nearest.id,
+	    name: nearest.name,
+	    address: nearest.address,
+	    distanceKm: nearest.distanceKm,
+	  },
+	  allRanked: nearbyRanked.map((loc) => ({
+	    id: loc.id,
+	    name: loc.name,
+	    address: loc.address,
+	    distanceKm: loc.distanceKm,
+	  })),
+	};
     
     console.log("Outgoing payload:", JSON.stringify(responseData, null, 2));
 

@@ -103,12 +103,14 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    address: nearest.address,
 	    distanceKm: nearest.distanceKm,
 	  },
-	  allRanked: nearbyRanked.map((loc) => ({
+	  allRanked: JSON.stringify(
+	   nearbyRanked.map((loc) => ({
 	    id: loc.id,
 	    name: loc.name,
 	    address: loc.address,
 	    distanceKm: loc.distanceKm,
-	  })),
+	  }))
+	 ),
 	};
     
     console.log("Outgoing payload:", JSON.stringify(responseData, null, 2));

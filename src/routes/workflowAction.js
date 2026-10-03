@@ -99,11 +99,38 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
     }
 
     const ranked = rankByDistance(origin, locations);
-    const nearest = ranked[0];
+    let nearest = ranked[0];
     const nearbyRanked = ranked
 	.filter((loc) => loc.distanceKm < MAX_DISTANCE)
 	.slice(1, MAX_LOCATIONS);
     const nearbyRankedLimited = nearest ? [nearest, ...nearbyRanked] : [];
+
+    let drivingTimes;
+    try {
+      drivingTimes = await getDrivingTimes(
+        origin,
+        nearbyRankedLimited.map((loc) => ({ lat: loc.lat, lng: loc.lng }))
+      );
+    } catch (err) {
+      console.error("Driving time lookup failed:", err.message);
+      // Degrade gracefully — keep the location results, just without driving time
+      drivingTimes = nearbyRankedLimited.map(() => ({
+        drivingMinutes: null,
+        drivingTimeText: null,
+     }));
+    }
+
+
+    const nearbyRankedWithDriving = nearbyRankedLimited.map((loc, i) => ({
+      ...loc,
+      drivingMinutes: drivingTimes[i].drivingMinutes,
+      drivingTimeText: drivingTimes[i].drivingTimeText,
+    }));
+
+    const nearbyRankedSorted = [...nearbyRankedWithDriving].sort(
+      (a, b) => (a.drivingMinutes ?? Infinity) - (b.drivingMinutes ?? Infinity)
+    );
+    nearest = nearbyRankedSorted[0];
 
     if (process.env.GHL_NEAREST_LOCATION_FIELD_KEY) {
       try {
@@ -128,14 +155,19 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    address: nearest.address,
 	    distanceKm: nearest.distanceKm,
             calendar:nearest.calendar,
+            drivingMinutes:nearest.drivingMinutes,
+	    drivingTimeText:nearest.drivingTimeText
+
 	  },
 	  allRanked: JSON.stringify(
-	   nearbyRankedLimited.map((loc) => ({
+	   nearbyRankedSorted.map((loc) => ({
 	    id: loc.id,
 	    name: loc.name,
 	    address: loc.address,
 	    distanceKm: loc.distanceKm,
             calendar:loc.calendar,
+            drivingMinutes:loc.drivingMinutes,
+	    drivingTimeText:loc.drivingTimeText
 	  }))
 	 ),
 	};

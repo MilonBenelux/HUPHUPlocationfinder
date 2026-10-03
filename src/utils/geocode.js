@@ -33,4 +33,42 @@ async function geocodeZip(zip) {
   };
 }
 
-module.exports = { geocodeZip };
+
+async function getDrivingTimes(origin, destinations) {
+  if (destinations.length === 0) return [];
+
+  const originsParam = `${origin.lat},${origin.lng}`;
+  const destinationsParam = destinations
+    .map((d) => `${d.lat},${d.lng}`)
+    .join("|");
+
+  const res = await axios.get(
+    "https://maps.googleapis.com/maps/api/distancematrix/json",
+    {
+      params: {
+        origins: originsParam,
+        destinations: destinationsParam,
+        mode: "driving",
+        key: process.env.GOOGLE_MAPS_API_KEY,
+      },
+    }
+  );
+
+  if (res.data.status !== "OK") {
+    throw new Error(`Distance Matrix API error: ${res.data.status}`);
+  }
+
+  return res.data.rows[0].elements.map((el) => {
+    if (el.status !== "OK") {
+      return { drivingMinutes: null, drivingTimeText: null };
+    }
+    return {
+      drivingMinutes: Math.round(el.duration.value / 60),
+      drivingTimeText: el.duration.text,
+    };
+  });
+}
+
+module.exports = { geocodeZip, getDrivingTimes };
+
+

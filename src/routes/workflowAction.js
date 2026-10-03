@@ -1,5 +1,7 @@
 const MAX_DISTANCE = 15;  // the max distance to show secondary locations
+const MULT_FACTOR_NEAREST = 1.5;   // the max number of locations
 const MAX_LOCATIONS = 3;   // the max number of locations
+
 
 const express = require("express");
 const axios = require("axios");
@@ -100,8 +102,13 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 
     const ranked = rankByDistance(origin, locations);
     let nearest = ranked[0];
+
+    const dynamicMaxDistance = nearest
+      ? Math.max(nearest.distanceKm * MULT_FACTOR_NEAREST, MAX_DISTANCE)
+      : MAX_DISTANCE;
+
     const nearbyRanked = ranked
-	.filter((loc) => loc.distanceKm < MAX_DISTANCE)
+	.filter((loc) => loc.distanceKm < dynamicMaxDistance)
 	.slice(1, MAX_LOCATIONS);
     const nearbyRankedLimited = nearest ? [nearest, ...nearbyRanked] : [];
 

@@ -3,7 +3,7 @@ const MAX_LOCATIONS = 3;   // the max number of locations
 
 const express = require("express");
 const axios = require("axios");
-const { geocodeZip } = require("../utils/geocode");
+const { geocodeZip,getDrivingTimes } = require("../utils/geocode");
 const { rankByDistance } = require("../utils/distance");
 const locations = require("../config/locations");
 const { getValidAccessToken } = require("./oauth");

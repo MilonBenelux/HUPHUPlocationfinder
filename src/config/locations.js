@@ -6,7 +6,7 @@
  * Tip: get lat/lng for an address quickly via Google Maps
  * (right-click the pin -> the numbers at the top of the context menu).
  */
-module.exports = [
+const locations = [
 { id: "loc-01", name: "HUPHUP Beveren-Waas", address: "Albert Panisstraat 89, 9120 Beveren-Waas", lat: 51.2132090388284, lng: 4.2549859765253,calendar: "https://letsgo.huphup.be/widget/booking/27x5LOATvCCbLtr1HkeA"},
 { id: "loc-02", name: "HUPHUP Brasschaat", address: "Kapelsesteenweg 382, 2930 Brasschaat", lat: 51.2929237629941, lng: 4.44375943922942,calendar: "https://letsgo.huphup.be/widget/booking/2TIK4cVBybCcyDsT7Hqh"},
 { id: "loc-03", name: "HUPHUP Dendermonde - Mechelsesteenweg", address: "Mechelsesteenweg 244, 9200 Dendermonde", lat: 51.036537, lng: 4.123112,calendar: "https://letsgo.huphup.be/widget/booking/icfUHt8bSgLsPKkmgXCA"},
@@ -23,3 +23,34 @@ module.exports = [
 { id: "loc-14", name: "HUPHUP Waterloo", address: "Chaussée de Bruxelles 88A, 1410 Waterloo", lat: 50.7273117433373, lng: 4.39779356990309,calendar: "https://letsgo.huphup.be/widget/booking/CAnGtk44l84LDFyTBTZc"},
 { id: "loc-15", name: "HUPHUP Zandhoven", address: "Melkerijweg 1, 2240 Zandhoven", lat: 51.2239050068163, lng: 4.67383549875286,calendar: "https://letsgo.huphup.be/widget/booking/7FfKOl3AsXE14CY9cNJi"}
 ];
+
+// WhatsApp numbers per location, international format without "+" or spaces.
+const WHATSAPP_PHONES = {
+  "loc-01": "32460239081", // Beveren-Waas
+  "loc-02": "32460254739", // Brasschaat
+  "loc-03": "32460254760", // Dendermonde - Mechelsesteenweg
+  "loc-04": "32460254744", // Dendermonde - Oude Vest
+  "loc-05": "32460254761", // Diepenbeek
+  "loc-06": "32460259303", // Hoogstraten
+  "loc-07": "32460254770", // Kapellen
+  "loc-08": "32460203605", // Lanaken
+  "loc-09": "32460254736", // Maasmechelen
+  "loc-10": "32460254735", // Oostende
+  "loc-11": "32460254741", // Oudsbergen
+  "loc-12": "32460254742", // Schoten
+  "loc-13": "32460254765", // Tessenderlo
+  "loc-14": "32460254749", // Waterloo
+  "loc-15": "32460254762", // Zandhoven
+};
+
+const WHATSAPP_MESSAGE = "Hoi, ik wil graag een gratis proeftraining";
+
+function buildWhatsappUrl(phone, message = WHATSAPP_MESSAGE) {
+  if (!phone) return null;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
+
+module.exports = locations.map((loc) => {
+  const whatsappPhone = WHATSAPP_PHONES[loc.id] || null;
+  return { ...loc, whatsappPhone, whatsappUrl: buildWhatsappUrl(whatsappPhone) };
+});

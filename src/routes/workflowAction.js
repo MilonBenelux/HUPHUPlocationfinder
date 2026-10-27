@@ -163,7 +163,9 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    distanceKm: nearest.distanceKm,
             calendar:nearest.calendar,
             drivingMinutes:nearest.drivingMinutes,
-	    drivingTimeText:nearest.drivingTimeText
+	    drivingTimeText:nearest.drivingTimeText,
+            whatsappPhone:nearest.whatsappPhone,
+            whatsappUrl:nearest.whatsappUrl
 
 	  },
 	  allRanked: JSON.stringify(
@@ -174,7 +176,9 @@ router.post("/actions/nearest-location", verifyActionSecret, async (req, res) =>
 	    distanceKm: loc.distanceKm,
             calendar:loc.calendar,
             drivingMinutes:loc.drivingMinutes,
-	    drivingTimeText:loc.drivingTimeText
+	    drivingTimeText:loc.drivingTimeText,
+            whatsappPhone:loc.whatsappPhone,
+            whatsappUrl:loc.whatsappUrl
 	  }))
 	 ),
 	};

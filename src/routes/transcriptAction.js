@@ -1,6 +1,6 @@
 // Custom workflow action "Get Conversation Transcript" (key: get_transcript).
 //
-// Fetches the messages of the contact's conversation(s) from a start moment
+// Fetches the messages (all channels except e-mail) of the contact's conversation(s) from a start moment
 // onwards and returns them as one readable text block, so later workflow
 // steps (AI, e-mail, internal notification, custom field) can use it.
 //
@@ -19,6 +19,8 @@ const MAX_PAGES = 20; // 20 x 100 messages per conversation, safety stop
 const TIMEZONE = "Europe/Brussels";
 const LABEL_INBOUND = "Klant";
 const LABEL_OUTBOUND = "HUPHUP";
+const DIR_INBOUND = "IN";   // shown in each line: incoming message
+const DIR_OUTBOUND = "UIT"; // outgoing message
 
 const express = require("express");
 const axios = require("axios");
@@ -94,7 +96,6 @@ const formatDate = (d) => fmtDateTime.format(d).replace(",", "");
 const CHANNELS = {
   TYPE_SMS: "SMS",
   TYPE_WHATSAPP: "WhatsApp",
-  TYPE_EMAIL: "E-mail",
   TYPE_FACEBOOK: "Messenger",
   TYPE_INSTAGRAM: "Instagram",
   TYPE_LIVE_CHAT: "Chat",
@@ -103,10 +104,14 @@ const CHANNELS = {
   TYPE_CALL: "Oproep",
   TYPE_IVR_CALL: "Oproep",
   TYPE_CUSTOM_SMS: "SMS",
-  TYPE_CUSTOM_EMAIL: "E-mail",
   TYPE_CUSTOM_PROVIDER_SMS: "SMS",
-  TYPE_CUSTOM_PROVIDER_EMAIL: "E-mail",
 };
+
+// E-mails are left out of the transcript.
+function isEmail(msg) {
+  const type = msg.messageType || "";
+  return type.includes("EMAIL") || !!msg.meta?.email;
+}
 
 function cleanBody(body) {
   return String(body || "")
@@ -126,16 +131,20 @@ function cleanBody(body) {
 function toLine(msg) {
   const type = msg.messageType || "";
   if (type.startsWith("TYPE_ACTIVITY")) return null; // system/activity entries
+  if (isEmail(msg)) return null;
   const channel = CHANNELS[type];
   let text = cleanBody(msg.body);
   if (!text && channel === "Oproep") text = `(oproep${msg.meta?.call?.duration ? `, ${msg.meta.call.duration}s` : ""})`;
   if (!text && msg.attachments?.length) text = `(bijlage: ${msg.attachments.length})`;
   if (!text) return null;
-  const who = msg.direction === "inbound" ? LABEL_INBOUND : LABEL_OUTBOUND;
+  const inbound = msg.direction === "inbound";
+  const who = inbound ? LABEL_INBOUND : LABEL_OUTBOUND;
+  const dir = inbound ? DIR_INBOUND : DIR_OUTBOUND;
   const date = new Date(msg.dateAdded);
   return {
     date,
-    text: `[${formatDate(date)}${channel ? ` · ${channel}` : ""}] ${who}: ${text}`,
+    direction: inbound ? "inbound" : "outbound",
+    text: `[${formatDate(date)}${channel ? ` · ${channel}` : ""} · ${dir}] ${who}: ${text}`,
   };
 }
 
@@ -227,6 +236,9 @@ router.post("/actions/get-transcript", verifyActionSecret, async (req, res) => {
       transcript,
       message_count: kept.length,
       total_message_count: lines.length,
+      inbound_count: kept.filter((l) => l.direction === "inbound").length,
+      outbound_count: kept.filter((l) => l.direction === "outbound").length,
+      last_direction: kept.length ? kept[kept.length - 1].direction : "",
       truncated,
       conversation_id: conversations[0]?.id || "",
       since: since.toISOString(),

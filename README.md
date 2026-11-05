@@ -135,3 +135,41 @@ and the endpoint responds with the ranked list and the winner:
   directions API (Google Directions, Mapbox Directions) for the
   candidate locations instead — usually fine to just do this for the
   top 3-5 haversine-nearest to keep API calls low.
+
+## Second action: Get Conversation Transcript (`get_transcript`)
+
+`src/routes/transcriptAction.js` — returns the contact's conversation
+messages (all channels) from a start moment onwards as one readable text,
+for use in later workflow steps (AI, e-mail, custom field, …).
+
+**Extra scopes** (add on the marketplace app, then reinstall it on each
+location so the new token carries them):
+`conversations.readonly`, `conversations/message.readonly`
+
+**Action config** (Modules → Workflow → Create Action):
+
+- **Name**: `Get Conversation Transcript`, **Key**: `get_transcript`
+- **URL (POST)**: `https://<your-domain>/actions/get-transcript`
+- **Headers**: `x-action-secret: <ACTION_SHARED_SECRET>` (same as nearest_location)
+- **Input fields** (all optional):
+  - `days` — number, "Aantal dagen terug"
+  - `since_date` — date/string, "Vanaf datum" (YYYY-MM-DD or DD-MM-YYYY;
+    wins over `days`)
+  - `max_chars` — number, max transcript length (default 10000; oldest
+    messages are dropped first)
+  - none filled in → last 30 days
+- **Output fields** (flat, no `data.` prefix):
+  `success`, `transcript`, `message_count`, `total_message_count`,
+  `truncated`, `conversation_id`, `since`, `first_message_date`,
+  `last_message_date`
+
+Transcript lines look like:
+
+```
+[03/11/2026 21:13 · SMS] Klant: Kan ik morgen komen?
+[04/11/2026 09:02 · WhatsApp] HUPHUP: Tot morgen!
+```
+
+Activity/system entries are skipped; times are Europe/Brussels. On errors
+the action returns `success: false` with a `message` (HTTP 200) so the
+workflow can branch on it instead of failing.
